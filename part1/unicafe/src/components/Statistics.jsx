@@ -1,6 +1,15 @@
-const Statistics = ({data}) => {
+const Statistics = ({ data }) => {
   const { good, neutral, bad } = data;
-//   console.log(good, neutral, bad);
+
+  if (good === 0 && neutral === 0 && bad === 0) {
+    return (
+      <>
+        <h1>statistics</h1>
+        <p>No feedback given</p>
+      </>
+    );
+  }
+
   return (
     <>
       <h1>statistics</h1>
