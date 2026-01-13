@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import FilterList from "./components/Filter";
 import PersonForm from "./components/PersonForm";
 import ListPersons from "./components/ListPersons";
-import axios from "axios";
 import serverService from "./services/server";
 
 const App = () => {
@@ -10,19 +9,34 @@ const App = () => {
   const [filter, setFilter] = useState("");
 
   const updatePersonsOnServer = (newPerson) => {
-    //console.log("Updating persons on server with:", newPerson);
+    serverService.createUser(newPerson).catch((error) => {
+      console.error("Error updating persons on server:", error);
+    });
+  };
+
+  const deletePersonFromServer = (id) => {
+    if (!window.confirm("Are you sure you want to delete this person?")) {
+      return;
+    }
+
     serverService
-      .create(newPerson)
+      .deleteUser(id)
+      .then(() => {
+        fetchPersons();
+      })
       .catch((error) => {
-        console.error("Error updating persons on server:", error);
+        console.error("Error deleting person from server:", error);
       });
   };
 
-  useEffect(() => {
+  const fetchPersons = () => {
     serverService.getAll().then((response) => {
-      //console.log("Fetched persons from server:", response);
       setPersons(response.data);
     });
+  };
+
+  useEffect(() => {
+    fetchPersons();
   }, []);
 
   const onAddPerson = (newPerson) => {
@@ -67,7 +81,10 @@ const App = () => {
       <h2>Add a new</h2>
       <PersonForm onAddPerson={onAddPerson} />
       <h2>Numbers</h2>
-      <ListPersons persons={filteredPersons} />
+      <ListPersons
+        persons={filteredPersons}
+        onDeletePerson={deletePersonFromServer}
+      />
     </div>
   );
 };
