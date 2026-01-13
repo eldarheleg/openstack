@@ -1,8 +1,13 @@
-const ListPersons = ({ personsToShow }) => {
-    console.log("Rendering ListPersons" + personsToShow);
+const ListPersons = ({ persons }) => {
   return (
-    personsToShow()
+    <div>
+      {persons.map((person) => (
+        <p key={person.id}>
+          {person.name} - {person.phoneNumber}
+        </p>
+      ))}
+    </div>
   );
-}
+};
 
 export default ListPersons;

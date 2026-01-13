@@ -10,48 +10,30 @@ const App = () => {
     { name: "Dan Abramov", phoneNumber: "12-43-234345", id: 3 },
     { name: "Mary Poppendieck", phoneNumber: "39-23-6423122", id: 4 },
   ]);
-  const [newName, setNewName] = useState("");
-  const [newNumber, setNewNumber] = useState("");
   const [filter, setFilter] = useState("");
 
-  const onSubmitState = (event) => {
-    event.preventDefault();
-    duplicateCheck(newName);
-    const personObject = {
-      name: newName,
-      phoneNumber: newNumber,
+  const onAddPerson = (newPerson) => {
+    if (duplicateCheck(newPerson.name)) {
+      return;
+    }
+    const personWithId = {
+      ...newPerson,
+      id: persons.length > 0 ? Math.max(...persons.map((p) => p.id)) + 1 : 1,
     };
-    setPersons(persons.concat(personObject));
-    setNewName("");
-    setNewNumber("");
+    setPersons(persons.concat(personWithId));
   };
 
   const duplicateCheck = (name) => {
-    for (let person of persons) {
-      if (person.name === name) {
-        alert(`${name} is already added to phonebook`);
-        throw new Error("Duplicate name");
-      }
+    const exists = persons.some((person) => person.name === name);
+    if (exists) {
+      alert(`${name} is already added to phonebook`);
     }
+    return exists;
   };
 
-  const listToShow = () => {
-    return filter
-      ? [...persons]
-          .filter((person) =>
-            person.name.toLowerCase().includes(filter.toLowerCase())
-          )
-          .map((person, index) => (
-            <p key={index}>
-              {person.name} - {person.phoneNumber}
-            </p>
-          ))
-      : [...persons].map((person, index) => (
-          <p key={index}>
-            {person.name} - {person.phoneNumber}
-          </p>
-        ));
-  };
+  const filteredPersons = persons.filter((person) =>
+    person.name.toLowerCase().includes(filter.toLowerCase())
+  );
 
   return (
     <div>
@@ -61,15 +43,9 @@ const App = () => {
         handleFilterChange={(e) => setFilter(e.target.value)}
       />
       <h2>Add a new</h2>
-      <PersonForm
-        addPerson={onSubmitState}
-        newName={newName}
-        handleNameChange={(e) => setNewName(e.target.value)}
-        newNumber={newNumber}
-        handleNumberChange={(e) => setNewNumber(e.target.value)}
-      />
+      <PersonForm onAddPerson={onAddPerson} />
       <h2>Numbers</h2>
-      <ListPersons personsToShow={listToShow} />
+      <ListPersons persons={filteredPersons} />
     </div>
   );
 };

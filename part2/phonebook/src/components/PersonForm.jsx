@@ -1,16 +1,42 @@
-const PersonForm = ({ addPerson, newName, handleNameChange, newNumber, handleNumberChange }) => {
+import { useState } from "react";
+
+const PersonForm = ({ onAddPerson }) => {
+  const [newName, setNewName] = useState("");
+  const [newNumber, setNewNumber] = useState("");
+  console.log("PersonForm rendered  " + onAddPerson);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!newName.trim() || !newNumber.trim()) {
+      alert("Name and phone number are required");
+      return;
+    }
+    onAddPerson({ name: newName, phoneNumber: newNumber });
+    setNewName("");
+    setNewNumber("");
+  };
+
   return (
-    <form onSubmit={addPerson}>
-        <div>
-            name: <input value={newName} onChange={handleNameChange} />
-        </div>
-        <div>
-            phone: <input value={newNumber} onChange={handleNumberChange} />
-        </div>
-        <div>
-            <button type="submit">add</button>
-        </div>
+    <form onSubmit={handleSubmit}>
+      <div>
+        <label>
+          name:{" "}
+          <input value={newName} onChange={(e) => setNewName(e.target.value)} />
+        </label>
+      </div>
+      <div>
+        <label>
+          phone:{" "}
+          <input
+            value={newNumber}
+            onChange={(e) => setNewNumber(e.target.value)}
+          />
+        </label>
+      </div>
+      <div>
+        <button type="submit">add</button>
+      </div>
     </form>
-    );
-}
+  );
+};
 export default PersonForm;
