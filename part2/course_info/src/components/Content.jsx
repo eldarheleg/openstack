@@ -6,12 +6,12 @@ const Content = ({ parts }) => {
     return acc + part.exercises;
   }, 0);
   return (
-    <div>
+    <>
       {parts.map((part) => (
         <Part part={part} />
       ))}
-      <p>Total of {sum} exercises</p>
-    </div>
+      <strong>Total of {sum} exercises</strong>
+    </>
   );
 };
 export default Content;
