@@ -3,7 +3,6 @@ import { useState } from "react";
 const PersonForm = ({ onAddPerson }) => {
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
-  console.log("PersonForm rendered  " + onAddPerson);
 
   const handleSubmit = (e) => {
     e.preventDefault();
