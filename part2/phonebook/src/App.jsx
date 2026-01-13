@@ -8,10 +8,22 @@ const App = () => {
   const [persons, setPersons] = useState([]);
   const [filter, setFilter] = useState("");
 
-  const updatePersonsOnServer = (newPerson) => {
+  const createPersonsOnServer = (newPerson) => {
     serverService.createUser(newPerson).catch((error) => {
-      console.error("Error updating persons on server:", error);
+      console.error("Error creating persons on server:", error);
     });
+  };
+
+  const updatePersonOnServer = (updatedPerson) => {
+    serverService
+      .updateUser(updatedPerson.id, updatedPerson)
+      .then(() => {
+        console.log("Person updated on server", updatedPerson);
+        fetchPersons();
+      })
+      .catch((error) => {
+        console.error("Error updating person on server:", error);
+      });
   };
 
   const deletePersonFromServer = (id) => {
@@ -40,7 +52,7 @@ const App = () => {
   }, []);
 
   const onAddPerson = (newPerson) => {
-    if (duplicateCheck(newPerson.name)) {
+    if (duplicateCheck(newPerson)) {
       return;
     }
     const personWithId = {
@@ -50,19 +62,20 @@ const App = () => {
           ? (Math.max(...persons.map((p) => p.id)) + 1).toString()
           : "1",
     };
-
-    //console.log("Adding person:", personWithId);
-
     setPersons(persons.concat(personWithId));
-    //console.log("Persons after addition:", persons.concat(personWithId));
-    updatePersonsOnServer(personWithId);
-    //console.log("Server update initiated");
+    createPersonsOnServer(personWithId);
   };
 
-  const duplicateCheck = (name) => {
-    const exists = persons.some((person) => person.name === name);
+  const duplicateCheck = (newPerson) => {
+    const exists = persons.some((person) => person.name === newPerson.name);
     if (exists) {
-      alert(`${name} is already added to phonebook`);
+      window.confirm(
+        `${newPerson.name} is already added to phonebook, replace the old number with a new one?`
+      );
+      updatePersonOnServer({
+        ...persons.find((p) => p.name === newPerson.name),
+        number: newPerson.number,
+      });
     }
     return exists;
   };
