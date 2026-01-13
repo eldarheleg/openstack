@@ -11,7 +11,7 @@ const PersonForm = ({ onAddPerson }) => {
       alert("Name and phone number are required");
       return;
     }
-    onAddPerson({ name: newName, phoneNumber: newNumber });
+    onAddPerson({ name: newName, number: newNumber });
     setNewName("");
     setNewNumber("");
   };

@@ -3,7 +3,7 @@ const ListPersons = ({ persons }) => {
     <div>
       {persons.map((person) => (
         <p key={person.id}>
-          {person.name} - {person.phoneNumber}
+          {person.name} - {person.number}
         </p>
       ))}
     </div>
