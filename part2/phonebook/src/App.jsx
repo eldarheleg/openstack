@@ -3,25 +3,24 @@ import FilterList from "./components/Filter";
 import PersonForm from "./components/PersonForm";
 import ListPersons from "./components/ListPersons";
 import axios from "axios";
+import serverService from "./services/server";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [filter, setFilter] = useState("");
 
   const updatePersonsOnServer = (newPerson) => {
-    console.log("Updating persons on server with:", newPerson);
-    axios
-      .post("http://localhost:3001/persons", newPerson)
-      .then((response) => {
-        console.log("Persons updated on server", response.data);
-      })
+    //console.log("Updating persons on server with:", newPerson);
+    serverService
+      .create(newPerson)
       .catch((error) => {
         console.error("Error updating persons on server:", error);
       });
   };
 
   useEffect(() => {
-    axios.get("http://localhost:3001/persons").then((response) => {
+    serverService.getAll().then((response) => {
+      //console.log("Fetched persons from server:", response);
       setPersons(response.data);
     });
   }, []);
@@ -32,15 +31,18 @@ const App = () => {
     }
     const personWithId = {
       ...newPerson,
-      id: persons.length > 0 ? (Math.max(...persons.map((p) => p.id)) + 1).toString() : "1",
+      id:
+        persons.length > 0
+          ? (Math.max(...persons.map((p) => p.id)) + 1).toString()
+          : "1",
     };
 
-    console.log("Adding person:", personWithId);
+    //console.log("Adding person:", personWithId);
 
     setPersons(persons.concat(personWithId));
-    console.log("Persons after addition:", persons.concat(personWithId));
+    //console.log("Persons after addition:", persons.concat(personWithId));
     updatePersonsOnServer(personWithId);
-    console.log("Server update initiated");
+    //console.log("Server update initiated");
   };
 
   const duplicateCheck = (name) => {
