@@ -3,15 +3,28 @@ import FilterList from "./components/Filter";
 import PersonForm from "./components/PersonForm";
 import ListPersons from "./components/ListPersons";
 import serverService from "./services/server";
+import Notification from "./components/Notification";
+import "./index.css";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [filter, setFilter] = useState("");
+  const [message, setMessage] = useState("");
 
   const createPersonsOnServer = (newPerson) => {
-    serverService.createUser(newPerson).catch((error) => {
-      console.error("Error creating persons on server:", error);
-    });
+    serverService
+      .createUser(newPerson)
+      .then(() => {
+        console.log("Person updated on server", newPerson);
+        setMessage(`Added ${newPerson.name} to server`);
+        setTimeout(() => {
+          setMessage(null);
+        }, 5000);
+      })
+      .catch((error) => {
+        console.error("Error creating persons on server:", error);
+        
+      });
   };
 
   const updatePersonOnServer = (updatedPerson) => {
@@ -19,10 +32,15 @@ const App = () => {
       .updateUser(updatedPerson.id, updatedPerson)
       .then(() => {
         console.log("Person updated on server", updatedPerson);
+        setMessage(` ${updatedPerson.name} updated on server`);
+        setTimeout(() => {
+          setMessage(null);
+        }, 5000);
         fetchPersons();
       })
       .catch((error) => {
         console.error("Error updating person on server:", error);
+        
       });
   };
 
@@ -91,6 +109,7 @@ const App = () => {
         filter={filter}
         handleFilterChange={(e) => setFilter(e.target.value)}
       />
+      {message && <Notification message={message} className="notification" />}
       <h2>Add a new</h2>
       <PersonForm onAddPerson={onAddPerson} />
       <h2>Numbers</h2>
