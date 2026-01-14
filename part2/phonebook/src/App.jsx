@@ -9,21 +9,30 @@ import "./index.css";
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [filter, setFilter] = useState("");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState({ text: null, type: null });
 
   const createPersonsOnServer = (newPerson) => {
     serverService
       .createUser(newPerson)
       .then(() => {
         console.log("Person updated on server", newPerson);
-        setMessage(`Added ${newPerson.name} to server`);
+        setMessage({
+          text: `Added ${newPerson.name} to server`,
+          type: "success",
+        });
         setTimeout(() => {
           setMessage(null);
         }, 5000);
       })
       .catch((error) => {
         console.error("Error creating persons on server:", error);
-        
+        setMessage({
+          text: `Error adding ${newPerson.name} to server`,
+          type: "error",
+        });
+        setTimeout(() => {
+          setMessage(null);
+        }, 5000);
       });
   };
 
@@ -32,7 +41,10 @@ const App = () => {
       .updateUser(updatedPerson.id, updatedPerson)
       .then(() => {
         console.log("Person updated on server", updatedPerson);
-        setMessage(` ${updatedPerson.name} updated on server`);
+        setMessage({
+          text: `${updatedPerson.name} updated on server`,
+          type: "success",
+        });
         setTimeout(() => {
           setMessage(null);
         }, 5000);
@@ -40,7 +52,20 @@ const App = () => {
       })
       .catch((error) => {
         console.error("Error updating person on server:", error);
-        
+        if (error.response?.status === 404) {
+          setMessage({
+            text: `Information of ${updatedPerson.name} has already been deleted form server`,
+            type: "error",
+          });
+        } else {
+          setMessage({
+            text: `Error updating ${updatedPerson.name} on server`,
+            type: "error",
+          });
+        }
+        setTimeout(() => {
+          setMessage(null);
+        }, 5000);
       });
   };
 
@@ -56,6 +81,13 @@ const App = () => {
       })
       .catch((error) => {
         console.error("Error deleting person from server:", error);
+        setMessage({
+          text: `Error deleting ${newPerson.name} from server`,
+          type: "error",
+        });
+        setTimeout(() => {
+          setMessage(null);
+        }, 5000);
       });
   };
 
