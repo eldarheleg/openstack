@@ -1,19 +1,29 @@
-const Countries = ({country}) => {
-    return (
-        <div>
-            <h1>{country.name.common}</h1>
-            <p>Capital: {country.capital}</p>
-            <p>Area: {country.area}</p>
-            <br />
-            <h2>Languages:</h2>
-            <ul>
-                {Object.values(country.languages).map((language) => (
-                    <li key={language}>{language}</li>
-                ))}
-            </ul>
-            <img src={country.flags.png} alt={`Flag of ${country.name.common}`} />
-        </div>
-    )
-}
+const Country = ({ country }) => {
+  const capital = country.capital?.[0] || "N/A";
+  const languages = country.languages || {};
 
-export default Countries;
+  return (
+    <div>
+      <h2>{country.name.common}</h2>
+      <div>
+        <p>capital {capital}</p>
+        <p>area {country.area} km²</p>
+      </div>
+      <div>
+        <h3>languages</h3>
+        <ul>
+          {Object.values(languages).map((lang) => (
+            <li key={lang}>{lang}</li>
+          ))}
+        </ul>
+      </div>
+      <img
+        src={country.flags.png}
+        alt={`${country.name.common} flag`}
+        width="100"
+      />
+    </div>
+  );
+};
+
+export default Country;
