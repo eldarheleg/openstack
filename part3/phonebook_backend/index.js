@@ -53,11 +53,18 @@ app.get("/api/persons/:id", (request, response) => {
 });
 
 app.post("/api/persons", (request, response) => {
+    console.log(request.body);
   const person = request.body;
-  const id = (Math.random(...persons.map((p) => Number(p.id))) + 1).toString();
+  if (!person.name || !person.number) {
+    return response.status(400).json({ error: "name or number is missing" });
+  }
+  if (persons.find((p) => p.name === person.name)) {
+    return response.status(400).json({ error: "name must be unique" });
+  }
+  const id = (Math.max(...persons.map((p) => Number(p.id))) + 1).toString();
   const newPerson = { id, ...person };
   persons = persons.concat(newPerson);
-  console.log(person);
+  //console.log(person);
   response.json(person);
 });
 
