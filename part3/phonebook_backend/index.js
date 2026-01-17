@@ -54,6 +54,9 @@ app.get("/api/persons/:id", (request, response) => {
 
 app.post("/api/persons", (request, response) => {
   const person = request.body;
+  const id = (Math.random(...persons.map((p) => Number(p.id))) + 1).toString();
+  const newPerson = { id, ...person };
+  persons = persons.concat(newPerson);
   console.log(person);
   response.json(person);
 });
