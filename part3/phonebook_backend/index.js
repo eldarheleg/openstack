@@ -1,11 +1,24 @@
 const express = require("express");
 const morgan = require("morgan");
 
-
 const app = express();
 
 app.use(express.json());
-app.use(morgan("tiny"));
+
+const morganFunction = morgan(function (tokens, req, res) {
+  return [
+    tokens.method(req, res),
+    tokens.url(req, res),
+    tokens.status(req, res),
+    tokens.res(req, res, "content-length"),
+    "-",
+    tokens["response-time"](req, res),
+    "ms",
+    req.body ? JSON.stringify(req.body) : "/",
+  ].join(" ");
+});
+
+app.use(morganFunction);
 
 let persons = [
   {
@@ -57,7 +70,7 @@ app.get("/api/persons/:id", (request, response) => {
 });
 
 app.post("/api/persons", (request, response) => {
-    console.log(request.body);
+  // console.log(request.body);
   const person = request.body;
   if (!person.name || !person.number) {
     return response.status(400).json({ error: "name or number is missing" });
@@ -83,8 +96,6 @@ app.delete("/api/persons/:id", (request, response) => {
     response.status(404).end();
   }
 });
-
-
 
 const PORT = 3001;
 app.listen(PORT, () => {
