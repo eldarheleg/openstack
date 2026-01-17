@@ -42,10 +42,20 @@ app.get("/api/info", (request, response) => {
   );
 });
 
-app.post("/api/notes", (request, response) => {
-  const note = request.body;
-  console.log(note);
-  response.json(note);
+app.get("/api/persons/:id", (request, response) => {
+  const id = request.params.id;
+  const person = persons.find((person) => person.id === id);
+  if (person) {
+    response.json(person);
+  } else {
+    response.status(404).end();
+  }
+});
+
+app.post("/api/persons", (request, response) => {
+  const person = request.body;
+  console.log(person);
+  response.json(person);
 });
 
 const PORT = 3001;
