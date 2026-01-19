@@ -1,14 +1,14 @@
 const express = require("express");
-const morgan = require("morgan");
+//const morgan = require("morgan");
 
 const app = express();
-const cors = require("cors");
+// const cors = require("cors");
 
-const corsOptions = {
-  origin: 'http://localhost:5173', // Only allow your frontend
-  optionsSuccessStatus: 200
-}
-app.use(cors(corsOptions))
+// const corsOptions = {
+//   origin: 'http://localhost:5173', // Only allow your frontend
+//   optionsSuccessStatus: 200
+// }
+// app.use(cors(corsOptions))
 
 app.use(express.json());
 
@@ -79,7 +79,7 @@ app.get("/api/persons/:id", (request, response) => {
 });
 
 app.post("/api/persons", (request, response) => {
-  console.log(request);
+  //console.log(request);
   const person = request.body;
   if (!person.name || !person.number) {
     return response.status(400).json({ error: "name or number is missing" });
