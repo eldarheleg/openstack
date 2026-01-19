@@ -2,23 +2,30 @@ const express = require("express");
 const morgan = require("morgan");
 
 const app = express();
+const cors = require("cors");
+
+const corsOptions = {
+  origin: 'http://localhost:5173', // Only allow your frontend
+  optionsSuccessStatus: 200
+}
+app.use(cors(corsOptions))
 
 app.use(express.json());
 
-const morganFunction = morgan(function (tokens, req, res) {
-  return [
-    tokens.method(req, res),
-    tokens.url(req, res),
-    tokens.status(req, res),
-    tokens.res(req, res, "content-length"),
-    "-",
-    tokens["response-time"](req, res),
-    "ms",
-    req.body ? JSON.stringify(req.body) : "/",
-  ].join(" ");
-});
+// const morganFunction = morgan(function (tokens, req, res) {
+//   return [
+//     tokens.method(req, res),
+//     tokens.url(req, res),
+//     tokens.status(req, res),
+//     tokens.res(req, res, "content-length"),
+//     "-",
+//     tokens["response-time"](req, res),
+//     "ms",
+//     req.body ? JSON.stringify(req.body) : "/",
+//   ].join(" ");
+// });
 
-app.use(morganFunction);
+// app.use(morganFunction);
 
 let persons = [
   {
@@ -70,7 +77,7 @@ app.get("/api/persons/:id", (request, response) => {
 });
 
 app.post("/api/persons", (request, response) => {
-  // console.log(request.body);
+  console.log(request);
   const person = request.body;
   if (!person.name || !person.number) {
     return response.status(400).json({ error: "name or number is missing" });

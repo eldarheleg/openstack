@@ -93,6 +93,7 @@ const App = () => {
 
   const fetchPersons = () => {
     serverService.getAll().then((response) => {
+      console.log("Fetched persons from server:", response.data);
       setPersons(response.data);
     });
   };
