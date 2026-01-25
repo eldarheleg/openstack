@@ -1,17 +1,28 @@
+require('dotenv').config();
 const mongoose = require("mongoose");
+
+console.log("Checking environment variable...");
+console.log("Value:", process.env.MONGODB_URL);
 
 if (process.argv.length < 3) {
   console.log("give password as argument");
   process.exit(1);
 }
 
-const password = process.argv[2];
+//const password = process.argv[2];
 
-const url = `mongodb+srv://openstack_db:${password}@cluster0.slxtqk1.mongodb.net/?appName=Cluster0`;
+const url = process.env.MONGODB_URL;
 
 mongoose.set("strictQuery", false);
 
-mongoose.connect(url, { family: 4 });
+mongoose
+  .connect(url, { family: 4 })
+  .then((result) => {
+    console.log("connected to MongoDB");
+  })
+  .catch((error) => {
+    console.log("error connecting to MongoDB:", error.message);
+  });
 
 const personSchema = new mongoose.Schema({
   id: Number,

@@ -106,18 +106,19 @@ const App = () => {
     if (duplicateCheck(newPerson)) {
       return;
     }
-    const personWithId = {
-      ...newPerson,
-      id:
-        persons.length > 0
-          ? (Math.max(...persons.map((p) => p.id)) + 1).toString()
-          : "1",
-    };
-    setPersons(persons.concat(personWithId));
-    createPersonsOnServer(personWithId);
+    // const personWithId = {
+    //   ...newPerson,
+    //   id:
+    //     persons.length > 0
+    //       ? (Math.max(...persons.map((p) => p.id)) + 1).toString()
+    //       : "1",
+    // };
+    setPersons(persons.concat(newPerson));
+    createPersonsOnServer(newPerson);
   };
 
   const duplicateCheck = (newPerson) => {
+    console.log("Checking for duplicates:", newPerson);
     const exists = persons.some((person) => person.name === newPerson.name);
     if (exists) {
       window.confirm(
