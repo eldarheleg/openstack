@@ -8,24 +8,14 @@ app.use(express.json());
 
 app.use(express.static("dist"));
 
-let persons = [];
-
-// Load persons from database on startup
-Person.find({}).then((loadedPersons) => {
-  persons = loadedPersons;
-  console.log("Loaded persons from database");
-  console.log(persons);
-});
 
 app.get("/", (request, response) => {
   response.send("<h1>Hello World!</h1>");
-  //   Person.find({}).then((persons) => {
-  //     console.log(persons);
-  //   });
 });
 
 app.get("/api/persons", (request, response) => {
   Person.find({}).then((persons) => {
+    console.log("Fetching all persons from database" + persons);
     response.json(persons);
   });
 });
@@ -55,37 +45,36 @@ app.post("/api/persons", (request, response) => {
   if (!person.name || !person.number) {
     return response.status(400).json({ error: "name or number is missing" });
   }
-  if (persons.find((p) => p.name === person.name)) {
-    return response.status(400).json({ error: "name must be unique" });
-  }
+  Person.find({}).then((persons) => {
+    if (persons.find((p) => p.name === person.name)) {
+      return response.status(400).json({ error: "name must be unique" });
+    }
+    let maxId =
+      persons.length > 0 ? Math.max(...persons.map((p) => p.personId)) : 0;
 
-  const maxId =
-    persons.length > 0 ? Math.max(...persons.map((p) => Number(p.id) || 0)) : 0;
-  const newNumericId = (maxId + 1).toString();
-
-  const newPerson = new Person({
-    name: person.name,
-    number: person.number,
-    id: newNumericId,
-  });
-
-  Person.create(newPerson)
-    .then((savedPerson) => {
-      persons = persons.concat(savedPerson);
-      response.json(savedPerson);
-    })
-    .catch((error) => {
-      console.log("Error saving person:", error.message);
-      response.status(500).json({ error: "internal server error" });
+    const newPerson = new Person({
+      name: person.name,
+      number: person.number,
+      personId: maxId + 1,
     });
+    newPerson
+      .save()
+      .then((savedPerson) => {
+        console.log("Saved new person to database:", savedPerson);
+        response.json(savedPerson);
+      })
+      .catch((error) => {
+        console.error("Error saving person to database:", error);
+        response.status(500).json({ error: "failed to save person" });
+      });
+  });
 });
 
 app.delete("/api/persons/:id", (request, response) => {
   const id = request.params.id;
   console.log(request.params);
-  const person = persons.find((person) => person._id.toString() === id);
+  const person = Person.findById(id);
   if (person) {
-    persons = persons.filter((p) => p._id.toString() !== id);
     Person.findByIdAndDelete(id).then(() => {
       console.log(`Deleting person with id: ${id}`);
       response.status(204).end();

@@ -12,10 +12,11 @@ const App = () => {
   const [message, setMessage] = useState({ text: null, type: null });
 
   const createPersonsOnServer = (newPerson) => {
+    console.log("Creating person on server:", newPerson);
     serverService
-      .createUser(newPerson)
+      .createPerson(newPerson)
       .then(() => {
-        console.log("Person updated on server", newPerson);
+        console.log("Person created on server", newPerson);
         setMessage({
           text: `Added ${newPerson.name} to server`,
           type: "success",
@@ -75,16 +76,12 @@ const App = () => {
     }
 
     serverService
-      .deleteUser(id)
+      .deletePerson(id)
       .then(() => {
         fetchPersons();
       })
       .catch((error) => {
         console.error("Error deleting person from server:", error);
-        setMessage({
-          text: `Error deleting ${newPerson.name} from server`,
-          type: "error",
-        });
         setTimeout(() => {
           setMessage(null);
         }, 5000);
@@ -92,10 +89,13 @@ const App = () => {
   };
 
   const fetchPersons = () => {
-    serverService.getAll().then((response) => {
-      console.log("Fetched persons from server:", response.data);
-      setPersons(response.data);
-    });
+    serverService
+      .getAll()
+      .then((response) => {
+        console.log("Fetched persons from server:", response.data);
+        setPersons(response.data);
+      })
+      .catch((err) => console.error("Error occured:", err));
   };
 
   useEffect(() => {
@@ -103,37 +103,31 @@ const App = () => {
   }, []);
 
   const onAddPerson = (newPerson) => {
-    if (duplicateCheck(newPerson)) {
-      return;
-    }
-    // const personWithId = {
-    //   ...newPerson,
-    //   id:
-    //     persons.length > 0
-    //       ? (Math.max(...persons.map((p) => p.id)) + 1).toString()
-    //       : "1",
-    // };
+    console.log("Adding new person:", newPerson);
+    // if (duplicateCheck(newPerson)) {
+    //   return;
+    // }
     setPersons(persons.concat(newPerson));
     createPersonsOnServer(newPerson);
   };
 
-  const duplicateCheck = (newPerson) => {
-    console.log("Checking for duplicates:", newPerson);
-    const exists = persons.some((person) => person.name === newPerson.name);
-    if (exists) {
-      window.confirm(
-        `${newPerson.name} is already added to phonebook, replace the old number with a new one?`
-      );
-      updatePersonOnServer({
-        ...persons.find((p) => p.name === newPerson.name),
-        number: newPerson.number,
-      });
-    }
-    return exists;
-  };
+  // const duplicateCheck = (newPerson) => {
+  //   console.log("Checking for duplicates:", newPerson);
+  //   const exists = persons.some((person) => person.name === newPerson.name);
+  //   if (exists) {
+  //     window.confirm(
+  //       `${newPerson.name} is already added to phonebook, replace the old number with a new one?`
+  //     );
+  //     updatePersonOnServer({
+  //       ...persons.find((p) => p.name === newPerson.name),
+  //       number: newPerson.number,
+  //     });
+  //   }
+  //   return exists;
+  // };
 
   const filteredPersons = persons.filter((person) =>
-    person.name.toLowerCase().includes(filter.toLowerCase())
+    person.name.toLowerCase().includes(filter.toLowerCase()),
   );
 
   return (
