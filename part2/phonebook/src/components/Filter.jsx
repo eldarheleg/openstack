@@ -1,9 +1,9 @@
-const FilterList = ({ filter, handleFilterChange }) => {
+const FilterList = ({ value, onChange }) => {
   return (
     <div>
       <label>
         filter shown with:{" "}
-        <input value={filter} onChange={handleFilterChange} />
+        <input value={value} onChange={onChange} />
       </label>
     </div>
   );

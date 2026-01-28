@@ -7,116 +7,124 @@ const app = express();
 app.use(express.static("dist"));
 app.use(express.json());
 
-app.get("/", (request, response) => {
-  response.send("<h1>Hello World!</h1>");
+app.get("/", (req, res) => {
+  res.send("<h1>Hello World!</h1>");
 });
 
-app.get("/api/persons", (request, response) => {
-  Person.find({}).then((persons) => {
-    console.log("Fetching all persons from database" + persons);
-    response.json(persons);
-  });
-});
-
-app.get("/api/info", (request, response) => {
-  Person.find({}).then((persons) => {
-    const infoLength = persons.length;
-    const date = new Date();
-    response.send(
-      `<p>Phonebook has info for ${infoLength} people</p><p>${date}</p>`,
-    );
-  });
-});
-
-app.get("/api/persons/:id", (request, response) => {
-  const person = Person.findById(request.params.id).then((person) => {
-    if (person) {
-      response.json(person);
-    } else {
-      response.status(404).end();
-    }
-  });
-});
-
-app.put("/api/persons/:id", (request, response) => {
-  const id = request.params.id;
-  const { number } = request.body;
-
-  if (!number) {
-    return response.status(400).json({ error: "number is missing" });
-  }
-
-  Person.findByIdAndUpdate(id, { number }, { new: true })
-    .then((updatedPerson) => {
-      if (!updatedPerson) {
-        return response.status(404).json({ error: "person not found" });
-      }
-      response.json(updatedPerson);
+app.get("/api/persons", (req, res, next) => {
+  Person.find({})
+    .then((persons) => {
+      res.json(persons);
     })
     .catch((error) => {
-      console.error("Error updating person in database:", error);
-      response.status(500).json({ error: "failed to update person" });
+      next(error);
     });
 });
 
-app.post("/api/persons", (request, response) => {
-  const person = request.body;
+app.get("/api/info", (req, res, next) => {
+  Person.find({})
+    .then((persons) => {
+      const date = new Date();
+      res.send(
+        `<p>Phonebook has info for ${persons.length} people</p><p>${date}</p>`,
+      );
+    })
+    .catch((error) => {
+      next(error);
+    });
+});
+
+app.get("/api/persons/:id", (req, res, next) => {
+  Person.findById(req.params.id)
+    .then((person) => {
+      person ? res.json(person) : res.status(404).end();
+    })
+    .catch((error) => {
+      next(error);
+    });
+});
+
+app.put("/api/persons/:id", (req, res, next) => {
+  const { number } = req.body;
+
+  if (!number) {
+    return res.status(400).json({ error: "Number is missing" });
+  }
+
+  Person.findByIdAndUpdate(
+    req.params.id,
+    { number },
+    { new: true, runValidators: true },
+  )
+    .then((updatedPerson) => {
+      if (!updatedPerson) {
+        return res.status(404).json({ error: "Person not found" });
+      }
+      res.json(updatedPerson);
+    })
+    .catch((error) => {
+      next(error);
+    });
+});
+
+app.post("/api/persons", (req, res, next) => {
+  const person = req.body;
   if (!person.name || !person.number) {
-    return response.status(400).json({ error: "name or number is missing" });
+    return res.status(400).json({ error: "Name or number is missing" });
   }
-  Person.find({}).then((persons) => {
-    if (persons.find((p) => p.name === person.name)) {
-      return response.status(400).json({ error: "name must be unique" });
-    }
-    let maxId =
-      persons.length > 0 ? Math.max(...persons.map((p) => p.personId)) : 0;
 
-    const newPerson = new Person({
-      name: person.name,
-      number: person.number,
-      personId: maxId + 1,
-    });
-    newPerson
-      .save()
-      .then((savedPerson) => {
-        console.log("Saved new person to database:", savedPerson);
-        response.json(savedPerson);
-      })
-      .catch((error) => {
-        console.error("Error saving person to database:", error);
-        response.status(500).json({ error: "failed to save person" });
+  Person.findOne({ name: person.name })
+    .then((existingPerson) => {
+      if (existingPerson) {
+        return res.status(409).json({ error: "Name must be unique" });
+      }
+      const newPerson = new Person({
+        name: person.name,
+        number: person.number,
       });
-  });
+      newPerson
+        .save()
+        .then((savedPerson) => {
+          res.json(savedPerson);
+        })
+        .catch((error) => next(error));
+    })
+    .catch((error) => next(error));
 });
 
-app.delete("/api/persons/:id", (request, response) => {
-  const id = request.params.id;
-  console.log(request.params);
-  const person = Person.findById(id);
-  if (person) {
-    Person.findByIdAndDelete(id).then(() => {
-      console.log(`Deleting person with id: ${id}`);
-      response.status(204).end();
-    });
-  } else {
-    response.status(404).end();
+app.delete("/api/persons/:id", (req, res, next) => {
+  const person = Person.findById(req.params.id);
+  if (!person) {
+    return res.status(404).json({ error: "Person not found" });
   }
+  Person.findByIdAndRemove(req.params.id)
+    .then(() => {
+      res.status(204).end();
+    })
+    .catch((error) => next(error));
 });
 
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: "unknown endpoint" });
 };
 
-app.use(unknownEndpoint);
-
-const errorHandler = (error, request, response, next) => {
+const errorHandler = (error, req, res, next) => {
   console.error(error.message);
+
   if (error.name === "CastError") {
-    return response.status(400).send({ error: "malformatted id" });
+    return res.status(400).json({ error: "Malformatted id" });
   }
-  next(error);
+
+  if (error.name === "ValidationError") {
+    return res.status(400).json({
+      error: Object.values(error.errors).map((e) => e.message),
+    });
+  }
+
+  res.status(500).json({ error: "Something went wrong on the server" });
 };
 
+app.use(unknownEndpoint);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;

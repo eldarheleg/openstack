@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const PersonForm = ({ onAddPerson }) => {
+const PersonForm = ({ onSubmit }) => {
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
 
@@ -10,7 +10,7 @@ const PersonForm = ({ onAddPerson }) => {
       alert("Name and phone number are required");
       return;
     }
-    onAddPerson({ name: newName, number: newNumber });
+    onSubmit({ name: newName, number: newNumber });
     setNewName("");
     setNewNumber("");
   };

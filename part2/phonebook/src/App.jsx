@@ -6,89 +6,14 @@ import serverService from "./services/server";
 import Notification from "./components/Notification";
 import "./index.css";
 
-
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [filter, setFilter] = useState("");
-  const [message, setMessage] = useState({ text: null, type: null });
+  const [message, setMessage] = useState(null);
 
-  const createPersonsOnServer = (newPerson) => {
-    console.log("Creating person on server:", newPerson);
-    serverService
-      .createPerson(newPerson)
-      .then(() => {
-        console.log("Person created on server", newPerson);
-        setMessage({
-          text: `Added ${newPerson.name} to server`,
-          type: "success",
-        });
-        setTimeout(() => {
-          setMessage(null);
-        }, 5000);
-        fetchPersons();
-      })
-      .catch((error) => {
-        console.error("Error creating persons on server:", error);
-        setMessage({
-          text: `Error adding ${newPerson.name} to server`,
-          type: "error",
-        });
-        setTimeout(() => {
-          setMessage(null);
-        }, 5000);
-      });
-  };
-
-  const updatePersonOnServer = (updatedPerson) => {
-    console.log("Updating person on server:", updatedPerson);
-    serverService
-      .updatePerson(updatedPerson.id, updatedPerson)
-      .then(() => {
-        console.log("Person updated on server", updatedPerson);
-        setMessage({
-          text: `${updatedPerson.name} updated on server`,
-          type: "success",
-        });
-        setTimeout(() => {
-          setMessage(null);
-        }, 5000);
-        fetchPersons();
-      })
-      .catch((error) => {
-        console.error("Error updating person on server:", error);
-        if (error.response?.status === 404) {
-          setMessage({
-            text: `Information of ${updatedPerson.name} has already been deleted form server`,
-            type: "error",
-          });
-        } else {
-          setMessage({
-            text: `Error updating ${updatedPerson.name} on server`,
-            type: "error",
-          });
-        }
-        setTimeout(() => {
-          setMessage(null);
-        }, 5000);
-      });
-  };
-
-  const deletePersonFromServer = (id) => {
-    if (!window.confirm("Are you sure you want to delete this person?")) {
-      return;
-    }
-
-    serverService
-      .deletePerson(id)
-      .then(() => {
-        fetchPersons();
-      })
-      .catch((error) => {
-        console.error("Error deleting person from server:", error);
-        setTimeout(() => {
-          setMessage(null);
-        }, 5000);
-      });
+  const showMessage = (text, type = "success", durationMs = 5000) => {
+    setMessage({ text, type });
+    setTimeout(() => setMessage(null), durationMs);
   };
 
   const fetchPersons = () => {
@@ -98,28 +23,83 @@ const App = () => {
         console.log("Fetched persons from server:", response.data);
         setPersons(response.data);
       })
-      .catch((err) => console.error("Error occured:", err));
+      .catch((err) =>
+        showMessage(
+          err.response?.data?.error || "Error fetching persons from server",
+          "error",
+          5000,
+        ),
+      );
   };
 
   useEffect(() => {
     fetchPersons();
   }, []);
 
-  const onAddPerson = (newPerson) => {
+  const handleAddOrUpdate = (newPerson) => {
     console.log("Adding new person:", newPerson);
     const exists = persons.some((p) => p.name === newPerson.name);
     if (exists) {
       window.confirm(
-        `${newPerson.name} is already added to phonebook, replace the old number with a new one?`
+        `${newPerson.name} is already added to phonebook, replace the old number with a new one?`,
       );
-      updatePersonOnServer({
-        ...persons.find((p) => p.name === newPerson.name),
-        number: newPerson.number,
-      });
+      serverService
+        .updatePerson(
+          persons.find((p) => p.name === newPerson.name).id,
+          newPerson,
+        )
+        .then(() => {
+          setMessage({
+            text: `Updated ${newPerson.name}'s number`,
+            type: "success",
+          });
+          fetchPersons();
+        })
+        .catch((error) => {
+          setMessage({
+            text:
+              error.response?.data?.error || `Error updating ${newPerson.name}`,
+            type: "error",
+          });
+        });
       return;
     }
-    setPersons(persons.concat(newPerson));
-    createPersonsOnServer(newPerson);
+
+    serverService
+      .createPerson(newPerson)
+      .then(() => {
+        setMessage({
+          text: `Added ${newPerson.name}`,
+          type: "success",
+        });
+        setPersons(persons.concat(newPerson));
+        fetchPersons();
+      })
+      .catch((error) => {
+        setMessage({
+          text: error.response?.data?.error || `Error adding ${newPerson.name}`,
+          type: "error",
+        });
+      });
+  };
+
+  const handleDelete = (id, name) => {
+    if (!window.confirm("Are you sure you want to delete this person?")) {
+      return;
+    }
+
+    serverService
+      .deletePerson(id)
+      .then(() => {
+        showMessage(`${name} deleted successfully`);
+        fetchPersons();
+      })
+      .catch((error) => {
+        setMessage({
+          text: error.response?.data?.error || `Error deleting ${name}`,
+          type: "error",
+        });
+      });
   };
 
   const filteredPersons = persons.filter((person) =>
@@ -129,18 +109,12 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <FilterList
-        filter={filter}
-        handleFilterChange={(e) => setFilter(e.target.value)}
-      />
+      <FilterList value={filter} onChange={(e) => setFilter(e.target.value)} />
       {message && <Notification message={message} className="notification" />}
       <h2>Add a new</h2>
-      <PersonForm onAddPerson={onAddPerson} />
+      <PersonForm onSubmit={handleAddOrUpdate} />
       <h2>Numbers</h2>
-      <ListPersons
-        persons={filteredPersons}
-        onDeletePerson={deletePersonFromServer}
-      />
+      <ListPersons persons={filteredPersons} onDelete={handleDelete} />
     </div>
   );
 };
