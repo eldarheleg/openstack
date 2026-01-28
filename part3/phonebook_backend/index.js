@@ -38,6 +38,27 @@ app.get("/api/persons/:id", (request, response) => {
   });
 });
 
+app.put("/api/persons/:id", (request, response) => {
+  const id = request.params.id;
+  const { number } = request.body;
+
+  if (!number) {
+    return response.status(400).json({ error: "number is missing" });
+  }
+
+  Person.findByIdAndUpdate(id, { number }, { new: true })
+    .then((updatedPerson) => {
+      if (!updatedPerson) {
+        return response.status(404).json({ error: "person not found" });
+      }
+      response.json(updatedPerson);
+    })
+    .catch((error) => {
+      console.error("Error updating person in database:", error);
+      response.status(500).json({ error: "failed to update person" });
+    });
+});
+
 app.post("/api/persons", (request, response) => {
   const person = request.body;
   if (!person.name || !person.number) {

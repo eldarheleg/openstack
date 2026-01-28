@@ -6,6 +6,7 @@ import serverService from "./services/server";
 import Notification from "./components/Notification";
 import "./index.css";
 
+
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [filter, setFilter] = useState("");
@@ -24,6 +25,7 @@ const App = () => {
         setTimeout(() => {
           setMessage(null);
         }, 5000);
+        fetchPersons();
       })
       .catch((error) => {
         console.error("Error creating persons on server:", error);
@@ -38,8 +40,9 @@ const App = () => {
   };
 
   const updatePersonOnServer = (updatedPerson) => {
+    console.log("Updating person on server:", updatedPerson);
     serverService
-      .updateUser(updatedPerson.id, updatedPerson)
+      .updatePerson(updatedPerson.id, updatedPerson)
       .then(() => {
         console.log("Person updated on server", updatedPerson);
         setMessage({
@@ -104,27 +107,20 @@ const App = () => {
 
   const onAddPerson = (newPerson) => {
     console.log("Adding new person:", newPerson);
-    // if (duplicateCheck(newPerson)) {
-    //   return;
-    // }
+    const exists = persons.some((p) => p.name === newPerson.name);
+    if (exists) {
+      window.confirm(
+        `${newPerson.name} is already added to phonebook, replace the old number with a new one?`
+      );
+      updatePersonOnServer({
+        ...persons.find((p) => p.name === newPerson.name),
+        number: newPerson.number,
+      });
+      return;
+    }
     setPersons(persons.concat(newPerson));
     createPersonsOnServer(newPerson);
   };
-
-  // const duplicateCheck = (newPerson) => {
-  //   console.log("Checking for duplicates:", newPerson);
-  //   const exists = persons.some((person) => person.name === newPerson.name);
-  //   if (exists) {
-  //     window.confirm(
-  //       `${newPerson.name} is already added to phonebook, replace the old number with a new one?`
-  //     );
-  //     updatePersonOnServer({
-  //       ...persons.find((p) => p.name === newPerson.name),
-  //       number: newPerson.number,
-  //     });
-  //   }
-  //   return exists;
-  // };
 
   const filteredPersons = persons.filter((person) =>
     person.name.toLowerCase().includes(filter.toLowerCase()),
