@@ -73,6 +73,12 @@ app.post("/api/persons", (req, res, next) => {
     return res.status(400).json({ error: "Name or number is missing" });
   }
 
+  if (!/^(\d{2}|\d{3})-(\d+)$/.test(person.number) || person.number.length < 8) {
+    return res.status(400).json({
+      error: "Invalid phone number format. Use e.g. 12-3456789 or 040-1234567 (min 8 chars)"
+    });
+  }
+
   Person.findOne({ name: person.name })
     .then((existingPerson) => {
       if (existingPerson) {
@@ -97,7 +103,7 @@ app.delete("/api/persons/:id", (req, res, next) => {
   if (!person) {
     return res.status(404).json({ error: "Person not found" });
   }
-  Person.findByIdAndRemove(req.params.id)
+  Person.findByIdAndDelete(req.params.id)
     .then(() => {
       res.status(204).end();
     })

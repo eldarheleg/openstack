@@ -12,8 +12,11 @@ const App = () => {
   const [message, setMessage] = useState(null);
 
   const showMessage = (text, type = "success", durationMs = 5000) => {
+    setMessage(null);
     setMessage({ text, type });
-    setTimeout(() => setMessage(null), durationMs);
+    setTimeout(() => {
+      setMessage(null);
+    }, durationMs);
   };
 
   const fetchPersons = () => {
