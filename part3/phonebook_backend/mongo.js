@@ -1,62 +1,62 @@
-require('dotenv').config();
-const mongoose = require("mongoose");
+require('dotenv').config()
+const mongoose = require('mongoose')
 
-console.log("Checking environment variable...");
-console.log("Value:", process.env.MONGODB_URL);
+console.log('Checking environment variable...')
+console.log('Value:', process.env.MONGODB_URL)
 
 if (process.argv.length < 3) {
-  console.log("give password as argument");
-  process.exit(1);
+  console.log('give password as argument')
+  process.exit(1)
 }
 
 //const password = process.argv[2];
 
-const url = process.env.MONGODB_URL;
+const url = process.env.MONGODB_URL
 
-mongoose.set("strictQuery", false);
+mongoose.set('strictQuery', false)
 
 mongoose
   .connect(url, { family: 4 })
-  .then((result) => {
-    console.log("connected to MongoDB");
+  .then(() => {
+    console.log('connected to MongoDB')
   })
   .catch((error) => {
-    console.log("error connecting to MongoDB:", error.message);
-  });
+    console.log('error connecting to MongoDB:', error.message)
+  })
 
 const personSchema = new mongoose.Schema({
   id: Number,
   name: String,
   number: String,
-});
+})
 
-const Person = mongoose.model("Person", personSchema);
+const Person = mongoose.model('Person', personSchema)
 
 if (process.argv.length === 3) {
   // Only password provided - list all persons
   Person.find({}).then((result) => {
-    console.log("phonebook:");
+    console.log('phonebook:')
     result.forEach((person) => {
-      console.log(person.name, person.number);
-    });
-    mongoose.connection.close();
-  });
+      console.log(person.name, person.number)
+    })
+    mongoose.connection.close()
+  })
 } else {
   // Password + name + number provided - add person
   const person = new Person({
     id: 1,
-    name: process.argv[3] || "/",
-    number: process.argv[4] || "/",
-  });
+    name: process.argv[3] || '/',
+    number: process.argv[4] || '/',
+  })
 
-  person.save().then((result) => {
+  person.save().then(() => {
     console.log(
-      "Added " +
+      'Added ' +
         process.argv[3] +
-        " number " +
+        ' number ' +
         process.argv[4] +
-        " to phonebook"
-    );
-    mongoose.connection.close();
-  });
+        ' to phonebook'
+    )
+    mongoose.connection.close()
+  })
 }
