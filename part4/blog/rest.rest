@@ -1,0 +1,26 @@
+POST http://localhost:3003/api/blogs HTTP/1.1
+content-type: application/json
+
+{
+"title": "New 7g",
+"author":"eldar",
+"url":"www.google.ba",
+"likes": 5
+}
+
+###
+
+GET http://localhost:3003/api/blogs/69803e92c17019215d852420 HTTP/1.1
+content-type: application/json
+
+###
+
+PUT http://localhost:3003/api/blogs/69803e92c17019215d852420 HTTP/1.1
+content-type: application/json
+
+{
+"title": "New whoel 7g",
+"author":"eldar",
+"url":"www.google.ba",
+"likes": 5
+}
