@@ -87,6 +87,16 @@ describe("total likes", () => {
   test("of a bigger list is calculated right", () => {
     const result = listHelper.totalLikes(blogs);
     const expected = blogs.reduce((sum, b) => sum + b.likes, 0);
-    assert.strictEqual(result,expected);
+    assert.strictEqual(result, expected);
+  });
+});
+
+describe("favourite blog", () => {
+  test("favourite blog amoung blogs", () => {
+    const result = listHelper.favouriteBlog(blogs);
+    const expected = blogs.reduce((max, blog) =>
+      blog.likes > max.likes ? blog : max,
+    );
+    assert.deepStrictEqual(result, expected);
   });
 });
