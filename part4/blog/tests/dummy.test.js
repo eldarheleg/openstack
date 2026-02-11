@@ -100,3 +100,13 @@ describe("favourite blog", () => {
     assert.deepStrictEqual(result, expected);
   });
 });
+
+describe("most blogs", () => {
+  test("most blog from an author amoung blogs", () => {
+    const result = listHelper.mostBlogs(blogs);
+    assert.deepStrictEqual(result, {
+      author: "Robert C. Martin",
+      blogs: 3,
+    });
+  });
+});
